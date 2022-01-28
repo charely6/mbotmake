@@ -485,24 +485,22 @@ def createToolpath(filename, temp):
     G91 toggles relative positioning
     """
     for line in corpus:
+
         if line.startswith(';LAYER:'):
             sec = int(line.split(':', 1)[1])
             # We add the first section manually
             if sec > 0:
                 processed += generateCommand('comment', {}, {'comment': f'Layer Section {sec} ({sec})'}, [])
                 processed += generateCommand('comment', {}, {'comment': 'Material 0'}, [])
+
         if line.find(';') > -1:
             line = line[:line.find(';')]
+
         line = [part for part in line.strip().split(' ') if part != '']
-        if len(line) == 0:  # Most likely a blank line
-            print(''.join(['\b'] * len(
-                printline.format(linenum,
-                                 progresslen,
-                                 linenum/progresslen * 100.0))), end='')
-            linenum += 1
-            print(printline.format(
-                linenum, progresslen, linenum/progresslen * 100.0), end='')
+
+        if not line:
             continue
+
         if line[0] in ['G0', 'G1']:
 
             if len(line) == 2 and line[1][0] == 'F':
