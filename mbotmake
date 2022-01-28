@@ -8,46 +8,409 @@ import copy
 import math
 import re
 import traceback
+from uuid import uuid4
 
 
 def generateMetajson(temp, vardict):
-    meta = """
-{{
-    "toolhead_0_temperature": {0},
-    "toolhead_1_temperature": {1},
-    "printer_settings": {{
-        "platform_temperature": {2},
-        "extruder_temperatures": [
-            {0},
-            {1}
+    meta = json.loads('''
+{
+    "bot_type": "replicator_b",
+    "bounding_box": null,
+    "chamber_temperature": null,
+    "commanded_duration_s": null,
+    "duration_s": null,
+    "extruder_temperature": null,
+    "extruder_temperatures": [null],
+    "extrusion_distance_mm": null,
+    "extrusion_distances_mm": [null],
+    "extrusion_mass_g": null,
+    "extrusion_masses_g": [null],
+    "material": "pla",
+    "materials": ["pla"],
+    "num_z_layers": null,
+    "num_z_transitions": null,
+    "platform_temperature": null,
+    "thing_id": null,
+    "tool_type": "mk13",
+    "tool_types": ["mk13"],
+    "total_commands": null,
+    "miracle_config": {
+        "_bot": "replicator_b",
+        "_extruders": [
+            "mk13"
         ],
-        "heat_platform": {3},
-        "extruder": "0"
-    }},
-    "duration_s": {4}, 
-    "total_commands": {5}
-}}
-    """
-    meta = meta.format(vardict['tool0temp'], vardict['tool1temp'],
-                       vardict['bedtemp'],
-                       'true' if vardict['heatbed'] else 'false',
-                       int(math.ceil(vardict['time'])),
-                       vardict['toolpathfilelength'])
+        "_materials": [
+            "pla"
+        ],
+        "doRaft": true,
+        "gaggles": {
+            "default": {
+                "adjacentFillLeakyConnections": true,
+                "adjacentFillLeakyDistanceRatio": 1.4,
+                "backlashEpsilon": 0.05,
+                "backlashFeedback": 0.9,
+                "backlashX": 0.0,
+                "backlashY": 0.09,
+                "baseInsetDistanceMultiplier": 1.0,
+                "baseLayerHeight": 0.2,
+                "baseLayerWidth": 0.5,
+                "baseNumberOfShells": 1,
+                "bedZOffset": 0,
+                "bridgeAnchorMinimumLength": 0.8,
+                "bridgeAnchorWidth": 0.8,
+                "bridgeMaximumLength": 80.0,
+                "brimsBaseWidth": 2.5,
+                "brimsModelOffset": 0.0,
+                "brimsOverlapWidth": 1.5,
+                "coarseness": 0.0001,
+                "computeVolumeLike2_1_0": false,
+                "defaultExtruder": 0,
+                "defaultSupportMaterial": 0,
+                "description": "",
+                "doBacklashCompensation": false,
+                "doBreakawaySupport": true,
+                "doBridging": true,
+                "doBrims": false,
+                "doExponentialDeceleration": true,
+                "doExternalSpurs": true,
+                "doFanCommand": true,
+                "doFanModulation": true,
+                "doFixedLayerStart": false,
+                "doFixedShellStart": true,
+                "doInternalSpurs": false,
+                "doMinfill": false,
+                "doMixedRaft": false,
+                "doMixedSupport": false,
+                "doNewPathPlanning": true,
+                "doPaddedBase": false,
+                "doRaft": true,
+                "doRateLimit": true,
+                "doSplitLongMoves": false,
+                "doSupport": true,
+                "doSupportUnderBridges": false,
+                "exponentialDecelerationMinSpeed": 0.0,
+                "exponentialDecelerationRatio": 0.375,
+                "exponentialDecelerationSegmentCount": 10,
+                "extruderProfiles": [
+                    {
+                        "defaultTemperature": 215,
+                        "extrusionProfiles": {
+                            "bridges": {
+                                "fanSpeed": 0.95,
+                                "feedrate": 40.0
+                            },
+                            "brims": {
+                                "fanSpeed": 0.5,
+                                "feedrate": 10.0
+                            },
+                            "firstModelLayer": {
+                                "fanSpeed": 1.0,
+                                "feedrate": 30.0
+                            },
+                            "floorSurfaceFills": {
+                                "fanSpeed": 0.5,
+                                "feedrate": 90
+                            },
+                            "infill": {
+                                "fanSpeed": 0.5,
+                                "feedrate": 90
+                            },
+                            "insets": {
+                                "fanSpeed": 0.95,
+                                "feedrate": 90
+                            },
+                            "outlines": {
+                                "fanSpeed": 0.95,
+                                "feedrate": 40
+                            },
+                            "purge": {
+                                "fanSpeed": 0.5,
+                                "feedrate": 100
+                            },
+                            "raft": {
+                                "fanSpeed": 0.95,
+                                "feedrate": 90.0
+                            },
+                            "raftBase": {
+                                "fanSpeed": 0.5,
+                                "feedrate": 10.0
+                            },
+                            "roofSurfaceFills": {
+                                "fanSpeed": 0.5,
+                                "feedrate": 90
+                            },
+                            "sparseRoofSurfaceFills": {
+                                "fanSpeed": 0.5,
+                                "feedrate": 90
+                            },
+                            "spurs": {
+                                "fanSpeed": 0.5,
+                                "feedrate": 40
+                            }
+                        },
+                        "extrusionVolumeMultiplier": 1.0,
+                        "feedDiameter": 1.77,
+                        "idleTemperature": 190,
+                        "nozzleDiameter": 0.4,
+                        "oozeFeedstockDistance": 0.1,
+                        "preOozeFeedstockDistance": 0.1,
+                        "restartExtraDistance": 0.1,
+                        "restartRate": 30,
+                        "retractDistance": 0.5,
+                        "retractRate": 50,
+                        "toolchangeRestartDistance": 18.5,
+                        "toolchangeRestartRate": 6.0,
+                        "toolchangeRetractDistance": 19.0,
+                        "toolchangeRetractRate": 6.0
+                    }
+                ],
+                "fanDefaultSpeed": 0.95,
+                "fanLayer": 1,
+                "fanModulationThreshold": 0.5,
+                "fanModulationWindow": 0.1,
+                "fixedLayerStartX": 0,
+                "fixedLayerStartY": 0,
+                "fixedShellStartDirection": 215,
+                "floorSolidThickness": 0,
+                "floorSurfaceThickness": 0.8,
+                "floorThickness": 0.8,
+                "horizontalInset": 0,
+                "infillDensity": 0.4,
+                "infillShellSpacingMultiplier": 0.55,
+                "insetDistanceMultiplier": 1.0,
+                "layerHeight": 0.2,
+                "leakyConnectionsAdjacentDistance": 0.8,
+                "maxConnectionLength": 10.0,
+                "maxSparseFillThickness": 0.2,
+                "maxSpurWidth": 0.5,
+                "minLayerDuration": 5.0,
+                "minLayerHeight": 0.01,
+                "minRaftBaseGap": 10.0,
+                "minSpeedMultiplier": 0.3,
+                "minSpurLength": 0.34,
+                "minSpurWidth": 0.12,
+                "minThickInfillImprovement": 1.0,
+                "minimumMoveDistance": 0.01,
+                "modelFillProfiles": {
+                    "bridge": {
+                        "density": 1.0,
+                        "orientationInterval": 0,
+                        "orientationOffset": 0,
+                        "orientationRange": 360,
+                        "pattern": "bridge_fill"
+                    },
+                    "floor_surface": {
+                        "density": 1.0,
+                        "orientationInterval": 90,
+                        "orientationRange": 90,
+                        "pattern": "linear"
+                    },
+                    "roof_surface": {
+                        "density": 1.0,
+                        "orientationInterval": 90,
+                        "orientationRange": 360,
+                        "pattern": "linear"
+                    },
+                    "solid": {
+                        "density": 1.0,
+                        "orientationInterval": 90,
+                        "orientationRange": 90,
+                        "pattern": "linear"
+                    },
+                    "sparse": {
+                        "density": 0.4,
+                        "orientationInterval": 90,
+                        "orientationOffset": 0,
+                        "orientationRange": 90,
+                        "pattern": "linear"
+                    },
+                    "sparse_roof_surface": {
+                        "density": 0.4,
+                        "orientationInterval": 90,
+                        "orientationOffset": 0,
+                        "orientationRange": 90,
+                        "pattern": "linear"
+                    }
+                },
+                "numberOfBrims": 5,
+                "numberOfExtentShells": 2,
+                "numberOfInternalBrims": 5,
+                "numberOfShells": 2,
+                "numberOfSparseShells": 0,
+                "numberOfSupportShells": 0,
+                "paddedBaseOutlineOffset": -0.5,
+                "pauseHeights": [],
+                "purgeBaseRotation": 45,
+                "purgeBucketSide": 4.0,
+                "purgeWallBaseFilamentWidth": 2.0,
+                "purgeWallBasePatternLength": 10.0,
+                "purgeWallBasePatternWidth": 8.0,
+                "purgeWallModelOffset": 2.0,
+                "purgeWallPatternWidth": 2.0,
+                "purgeWallSpacing": 1.0,
+                "purgeWallWidth": 0.5,
+                "purgeWallXLength": 30,
+                "raftBaseInfillShellSpacingMultiplier": 0.1,
+                "raftBaseInsetDistanceMultiplier": 0.4,
+                "raftBaseLayers": 1,
+                "raftBaseOutset": 4,
+                "raftBaseShells": 3,
+                "raftBaseThickness": 0.3,
+                "raftBaseWidth": 2.5,
+                "raftBrimsSpacing": 1.0,
+                "raftExtraOffset": 0.0,
+                "raftFillProfiles": {
+                    "base": {
+                        "density": 0.2,
+                        "linearFillGroupDensity": 2.2,
+                        "linearFillGroupSize": 3,
+                        "orientationInterval": 0,
+                        "orientationOffset": 0,
+                        "orientationRange": 180,
+                        "pattern": "linear"
+                    },
+                    "interface": {
+                        "density": 0.5,
+                        "orientationInterval": 90,
+                        "orientationOffset": 45,
+                        "orientationRange": 360,
+                        "pattern": "linear"
+                    },
+                    "surface": {
+                        "density": 0.85,
+                        "orientationInterval": 90,
+                        "orientationOffset": 0,
+                        "orientationRange": 90,
+                        "pattern": "local_no_warp"
+                    }
+                },
+                "raftInterfaceLayers": 2,
+                "raftInterfaceShells": 0,
+                "raftInterfaceThickness": 0.27,
+                "raftInterfaceWidth": 0.4,
+                "raftInterfaceZOffset": -0.14,
+                "raftModelShellsSpacing": 0.26,
+                "raftModelSpacing": 0.33,
+                "raftSupportSpacing": 0.1,
+                "raftSurfaceInsetDistanceMultiplier": 0.8,
+                "raftSurfaceLayers": 2,
+                "raftSurfaceOutset": 4,
+                "raftSurfaceShellSpacingMultiplier": 0.7,
+                "raftSurfaceShells": 2,
+                "raftSurfaceThickness": 0.27,
+                "raftSurfaceZOffset": -0.03,
+                "rateLimitBufferSize": 100,
+                "rateLimitMinSpeed": 10,
+                "rateLimitSpeedRatio": 0.3,
+                "rateLimitSplitBias": 0,
+                "rateLimitSplitMoveDistance": 0.75,
+                "rateLimitSplitRecursionDepth": 8,
+                "rateLimitTransmissionRate": 150,
+                "roofAnchorMargin": 0.4,
+                "roofSolidThickness": 0,
+                "roofSurfaceThickness": 0.8,
+                "roofThickness": 0.8,
+                "shellsLeakyConnections": true,
+                "splitMinimumDistance": 0.4,
+                "startPosition": {
+                    "x": -150,
+                    "y": -100,
+                    "z": 0.2
+                },
+                "supportAngle": 15,
+                "supportBreakawayModelOffset": -0.15,
+                "supportBreakawayModelRoofSpacing": 0.16,
+                "supportCutout": 0.1,
+                "supportCutoutExtraDistance": 0.6,
+                "supportExtraDistance": 0.5,
+                "supportFillProfiles": {
+                    "solid": {
+                        "density": 0.32,
+                        "orientationInterval": 0,
+                        "orientationOffset": 45,
+                        "orientationRange": 360,
+                        "pattern": "hilbert_fill"
+                    },
+                    "sparse": {
+                        "consistentOrder": true,
+                        "density": 0.16,
+                        "orientationInterval": 0,
+                        "orientationOffset": 45,
+                        "orientationRange": 0,
+                        "pattern": "linear"
+                    }
+                },
+                "supportInsetDistanceMultiplier": 1.0,
+                "supportInteriorExtruder": 0,
+                "supportLayerHeight": 0.2,
+                "supportLeakyConnections": true,
+                "supportModelSpacing": 0.4,
+                "supportRoofModelSpacing": 0.4,
+                "supportRoofSolidThickness": 3.0,
+                "supportShellSpacingMultiplier": 0.55,
+                "thickLayerThreshold": 0,
+                "thickLayerVolumeMultiplier": 1,
+                "travelSpeedXY": 150,
+                "travelSpeedZ": 23,
+                "useRelativeExtruderPositions": false
+            }
+        },
+        "version": "5.6.0"
+    },
+    "preferences": {
+        "default": {
+            "overrides": {
+                "defaultSupportMaterial": 0,
+                "doSupport": true,
+                "doSupportUnderBridges": false,
+                "modelFillProfiles.sparse.density": 0.4,
+                "supportAngle": 15,
+                "supportFillProfiles.sparse.density": 0.16,
+                "supportModelSpacing": 0.4,
+                "undefined": 0
+            },
+            "print_mode": "balanced"
+        }
+    },
+    "uuid": "87fe421b-427a-4657-be72-28b7a6beee72",
+    "version": "1.2.0"
+}
+''')
+
+    meta['bounding_box']      = vardict['bounding_box']
+
+    meta['total_commands']    = vardict['toolpathfilelength']
+
+    meta['duration_s']        = vardict['time']
+
+    # I have no idea what this is supposed to be
+    meta['commanded_duration_s'] = vardict['time']/2
+
+    meta['num_z_transitions'] = vardict['z_transitions']
+    meta['num_z_layers']      = vardict['z_transitions'] + 1
+
+    meta['platform_temperature']   = vardict['bedtemp']
+
+    meta['extruder_temperature']   = vardict['extruder_temperature']
+    meta['extruder_temperatures']  = [meta['extruder_temperature']]
+
+    meta['extrusion_distance_mm']  = vardict['extrusion_distance']
+    meta['extrusion_distances_mm'] = [meta['extrusion_distance_mm']]
+
+    meta['extrusion_mass_g']       = vardict['extrusion_distance']*0.00305
+    meta['extrusion_masses_g']     = [meta['extrusion_mass_g']]
+
+    meta['uuid'] = str(uuid4())
+
     with open('{}/meta.json'.format(temp), 'w') as metafile:
-        metafile.write(meta)
-    return 
+        json.dump(meta, metafile, indent=4)
 
 
 def generateCommand(function, metadata, parameters, tags):
-    return copy.deepcopy([
-        {'command': {
-            'function': function,
-            'parameters': parameters,
-            'metadata': metadata,
-            'tags': tags
-            }
-        }
-    ])
+    return [{'command': {'function': function,
+                         'parameters': dict(parameters),
+                         'metadata': dict(metadata),
+                         'tags': list(tags)}}]
 
 
 def computeTime(prev, current):
@@ -62,6 +425,7 @@ def computeTime(prev, current):
                              [prev['x'], prev['y'], prev['z']])
     return distance/current['feedrate']
 
+
 def createToolpath(filename, temp):
     corpus = open(filename).readlines()
     processed = []
@@ -71,10 +435,10 @@ def createToolpath(filename, temp):
     axis = \
         {
             'a': 0.0,
-            'feedrate': 0.0,
-            'x': 0.0,
-            'y': 0.0,
-            'z': 0.0
+            'feedrate': 23.0,
+            'x': -150.0,
+            'y': -100.0,
+            'z': 0.3
         }
     tempmetadata = \
         {
@@ -93,12 +457,12 @@ def createToolpath(filename, temp):
         }
     printersettings = \
         {
-            'tool0temp': 0,
-            'tool1temp': 0,
             'bedtemp': 0,
             'heatbed': False,
             'time': 0.0,
-            'toolpathfilelength': 0
+            'toolpathfilelength': 0,
+            'z_transitions': 0,
+            'extruder_temperature': 0
         }
     printeroffset = \
         {
@@ -121,9 +485,15 @@ def createToolpath(filename, temp):
     G91 toggles relative positioning
     """
     for line in corpus:
+        if line.startswith(';LAYER:'):
+            sec = int(line.split(':', 1)[1])
+            # We add the first section manually
+            if sec > 0:
+                processed += generateCommand('comment', {}, {'comment': f'Layer Section {sec} ({sec})'}, [])
+                processed += generateCommand('comment', {}, {'comment': 'Material 0'}, [])
         if line.find(';') > -1:
             line = line[:line.find(';')]
-        line = [part for part in line.split(' ') if part != '']
+        line = [part for part in line.strip().split(' ') if part != '']
         if len(line) == 0:  # Most likely a blank line
             print(''.join(['\b'] * len(
                 printline.format(linenum,
@@ -134,10 +504,12 @@ def createToolpath(filename, temp):
                 linenum, progresslen, linenum/progresslen * 100.0), end='')
             continue
         if line[0] in ['G0', 'G1']:
+
             if len(line) == 2 and line[1][0] == 'F':
                 axis['feedrate'] = float(line[1][1:]) / 60.0
+
             else:  # Normal move
-                prev = copy.copy(axis)  # copy previous pos for timing
+                prev = axis.copy()
                 for ax in line[1:]:
                     if ax[0] == 'E':
                         axis['a'] = printeroffset['a'] + float(ax[1:])
@@ -149,14 +521,33 @@ def createToolpath(filename, temp):
                         axis['z'] = printeroffset['z'] + float(ax[1:])
                     elif ax[0] == 'F':
                         axis['feedrate'] = float(ax[1:]) / 60.0
+                if line[0] == 'G0':
+                    tag = 'Travel Move'
+                else:
+                    if prev['a'] < axis['a']:
+                        tag = 'Infill'
+                    elif prev['a'] == axis['a']:
+                        tag = 'Leaky Travel Move'
+                    elif axis['a'] < prev['a']:
+                        tag = 'Retract'
+
                 processed += generateCommand('move',
-                                             {'a': False,
-                                              'x': False,
-                                              'y': False,
-                                              'z': False},
+                                             {'relative': {'a': False,
+                                                           'x': False,
+                                                           'y': False,
+                                                           'z': False}},
                                              axis,
-                                             [])
+                                             [tag])
+
                 printersettings['time'] += computeTime(prev, axis)
+
+                if prev['z'] < axis['z']:
+                    printersettings['z_transitions'] += 1
+
+        elif line[0] == 'M82':
+            # E absolute
+            pass
+
         elif line[0] == 'G92':
             for ax in line[1:]:
                 if ax[0] == 'E':
@@ -167,25 +558,40 @@ def createToolpath(filename, temp):
                     printeroffset['y'] = axis['y'] + float(ax[1:])
                 elif ax[0] == 'Z':
                     printeroffset['z'] = axis['z'] + float(ax[1:])
+
         elif line[0] == 'M104':
             for ax in line[1:]:
                 if ax[0] == 'T':
                     tempmetadata['index'] = int(ax[1:])
                 elif ax[0] == 'S':
                     tempmetadata['temperature'] = int(ax[1:])
-            if tempmetadata['index'] != -1:
-                processed += generateCommand('set_toolhead_temperature',
-                                             {},
-                                             tempmetadata,
-                                             [])
-                if printersettings['tool{}temp'.format(tempmetadata['index'])] == 0:
-                    printersettings['tool{}temp'.format(tempmetadata['index'])] = tempmetadata['temperature']
-            else: # there is only one extruder
-                processed += generateCommand('set_toolhead_temperature',
-                                             {},
-                                             {'temperature': tempmetadata['temperature']},
-                                             [])
-                printersettings['tool0temp'] = tempmetadata['temperature']
+                    if tempmetadata['temperature'] != 0:
+                        if printersettings['extruder_temperature'] == 0:
+                            printersettings['extruder_temperature'] = tempmetadata['temperature']
+                        else:
+                            print('\x1b[2K\rMultiple temperatures issued during print, using only first.')
+            #if tempmetadata['index'] != -1:
+            #    processed += generateCommand('set_toolhead_temperature',
+            #                                 {},
+            #                                 tempmetadata,
+            #                                 [])
+            #    if printersettings['tool{}temp'.format(tempmetadata['index'])] == 0:
+            #        printersettings['tool{}temp'.format(tempmetadata['index'])] = tempmetadata['temperature']
+            #else: # there is only one extruder
+            #    processed += generateCommand('set_toolhead_temperature',
+            #                                 {},
+            #                                 {'temperature': tempmetadata['temperature']},
+            #                                 [])
+            #    printersettings['tool0temp'] = tempmetadata['temperature']
+            #
+        elif line[0] == 'M105':
+            # Report temp
+            pass
+
+        elif line[0] == 'M109':
+            # Wait for hotend temp
+            pass
+
         elif line[0] == 'M106':
             for ax in line[1:]:
                 if ax[0] == 'P':
@@ -203,25 +609,73 @@ def createToolpath(filename, temp):
                                          {},
                                          fanduty,
                                          [])
+
         elif line[0] == 'M107':
             fanstatus['value'] = False
             processed += generateCommand('toggle_fan',
                                          {},
                                          fanstatus,
                                          [])
+
         elif line[0] == 'M140':
             printersettings['bedtemp'] = int(line[1][1:])
             printersettings['heatbed'] = True
-        print(''.join(['\b'] * len(
-                printline.format(linenum, progresslen, linenum/progresslen * 100.0))), end='')
+
+        else:
+            print('\nignoring', repr(line[0]))
+
         linenum += 1
-        print(printline.format(linenum, progresslen, linenum/progresslen * 100.0), end='')
-    print()  # flush all the crap
+        if (linenum % 100) == 0:
+            print('\x1b[2K\r' + printline.format(linenum, progresslen, linenum/progresslen * 100.0), end='')
+
+    print()
     print('writing toolpath')
-    compiledtoolpath = json.dumps(processed, sort_keys=False, indent=4)
+    lines = ['{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Layer Section 0 (0)"},"tags":[]}},',
+             '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Material 0"},"tags":[]}},',
+             '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Lower Position  0"},"tags":[]}},',
+             '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Upper Position  0.3"},"tags":[]}},',
+             '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Thickness       0.3"},"tags":[]}},',
+             '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Width           2.5"},"tags":[]}},',
+             '{"command" : {"function":"move","metadata":{"relative":{"a":false,"x":false,"y":false,"z":false}},"parameters":{"a":0.0,"feedrate":23.0,"x":-150.0,"y":-100.0,"z":0.30},"tags":["Travel Move"]}},']
+    lines += [f'{json.dumps(c, sort_keys=False)},' for c in processed]
+    lines += ['{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"End of print"},"tags":[]}}']
+    #compiledtoolpath = json.dumps(processed, sort_keys=False, indent=4)
     with open('{}/print.jsontoolpath'.format(temp), 'w') as toolpathfile:
-        toolpathfile.write(compiledtoolpath)
-    printersettings['toolpathfilelength'] = len(re.findall('\n',compiledtoolpath))
+        toolpathfile.write("\n".join(["[", *lines, "]"]))
+
+    print('checking toolpath')
+    assert printersettings['extruder_temperature'] > 0
+    with open('{}/print.jsontoolpath'.format(temp), 'r') as toolpathfile:
+        json.load(toolpathfile)
+
+    print('collecting printer settings')
+
+    printersettings['toolpathfilelength'] = len(lines)
+
+    printersettings['extrusion_distance'] = max(c['command']['parameters']['a']
+                                                for c in processed
+                                                if c['command']['function'] == 'move')
+
+    printcoords = [cmd['command']['parameters'] for cmd in processed
+                   if set(cmd['command']['tags']) & {'Infill', 'Leaky Travel Move'}]
+
+    bbox = {'x_max': max(c['x'] for c in printcoords),
+            'x_min': min(c['x'] for c in printcoords),
+            'y_max': max(c['y'] for c in printcoords),
+            'y_min': min(c['y'] for c in printcoords),
+            'z_max': max(c['z'] for c in printcoords),
+            'z_min': min(c['z'] for c in printcoords)}
+
+    # Make sure bounding box is centered near the origin in X/Y and at the bottom of Z.
+    xrel = (bbox['x_max'] + bbox['x_min']) / (bbox['x_max'] - bbox['x_min'])
+    yrel = (bbox['y_max'] + bbox['y_min']) / (bbox['y_max'] - bbox['y_min'])
+    zrel = (bbox['z_max'] + bbox['z_min']) / (bbox['z_max'] - bbox['z_min'])
+    assert -0.05 < xrel < 0.05, xrel
+    assert -0.05 < yrel < 0.05, yrel
+    assert  0.95 < zrel < 1.05, zrel
+
+    printersettings['bounding_box'] = bbox
+
     return printersettings
 
 
@@ -233,26 +687,17 @@ def packageMBotFile(filename, temp):
 
 
 def main(argv):
-    try:
-        for gcode in argv[1:]:
-            temp = tempfile.mkdtemp()
-            output = gcode.replace('.gcode', '.makerbot')
-            print('Generating toolpath for', output)
-            vardict = createToolpath(gcode, temp)
-            print('Generating metadata for', output)
-            generateMetajson(temp, vardict)
-            print('Packaging', output)
-            packageMBotFile(output, temp)
-            print(output, 'done!')
-    except Exception as e:
-        print()
-        print('An error occurred.')
-        print('Please report this, as this may be a bug.')
-        print('Go to https://github.com/sckunkle/mbotmake/issues and add a new issue.')
-        print('Also, add the contents of {} to a zip file and add it to the issue, if there is any.'.format(temp))
-        traceback.print_exc()
-        input()
-        
+    for gcode in argv[1:]:
+        temp = tempfile.mkdtemp()
+        output = gcode.replace('.gcode', '.makerbot')
+        print('Generating toolpath for', output)
+        vardict = createToolpath(gcode, temp)
+        print('Generating metadata for', output)
+        generateMetajson(temp, vardict)
+        print('Packaging', output)
+        packageMBotFile(output, temp)
+        print(output, 'done!')
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -260,6 +705,5 @@ if __name__ == '__main__':
         print('Drag and drop your generated gcode file onto this executable.')
         print('It will then output a makerbot file in the dir that the original gcode is placed in.')
         print('Press enter to continue.')
-        input()
-        sys.exit()
-    main(sys.argv)
+    else:
+        main(sys.argv)
