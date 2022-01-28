@@ -3,7 +3,7 @@
 A gcode to .makerbot conversion tool, compatible with Marlin gcode from Cura.
 And likely others.
 
-*This is a fork that works for the Makerbot Replicator+*, and it is unclear if
+**This is a fork that works for the Makerbot Replicator+**, and it is unclear if
 it still works for the 5th Generation. See the original repository if you have
 a 5th gen.
 
