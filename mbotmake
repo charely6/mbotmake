@@ -429,9 +429,9 @@ def computeTime(prev, current):
 def createToolpath(filename, temp):
     corpus = open(filename).readlines()
     processed = []
-    progresslen = len(corpus)
+    linenum_last = len(corpus)
     linenum = 0
-    printline = '{0:>' + str(len(str(progresslen))) + '}/{1} {2:>3.0f}%'
+    printline = '{0:>' + str(len(str(linenum_last))) + '}/{1} {2:>3.0f}%'
     axis = \
         {
             'a': 0.0,
@@ -472,7 +472,7 @@ def createToolpath(filename, temp):
             'z': 0.0
         }
     print('lines processed:')
-    print(printline.format(0, progresslen, 0.0), end='')
+    print(printline.format(0, linenum_last, 0.0), end='')
     """
     Quick reference:
     G0/G1 is move
@@ -484,7 +484,10 @@ def createToolpath(filename, temp):
     G90 toggles absolute positioning
     G91 toggles relative positioning
     """
-    for line in corpus:
+    for linenum, line in enumerate(corpus, start=1):
+
+        if (linenum % 100) == 0 or linenum == linenum_last:
+            print('\x1b[2K\r' + printline.format(linenum, linenum_last, linenum/linenum_last * 100.0), end='')
 
         if line.startswith(';LAYER:'):
             sec = int(line.split(':', 1)[1])
@@ -493,9 +496,7 @@ def createToolpath(filename, temp):
                 processed += generateCommand('comment', {}, {'comment': f'Layer Section {sec} ({sec})'}, [])
                 processed += generateCommand('comment', {}, {'comment': 'Material 0'}, [])
 
-        if line.find(';') > -1:
-            line = line[:line.find(';')]
-
+        line = line.split(';', 1)[0]
         line = [part for part in line.strip().split(' ') if part != '']
 
         if not line:
@@ -519,6 +520,7 @@ def createToolpath(filename, temp):
                         axis['z'] = printeroffset['z'] + float(ax[1:])
                     elif ax[0] == 'F':
                         axis['feedrate'] = float(ax[1:]) / 60.0
+
                 if line[0] == 'G0':
                     tag = 'Travel Move'
                 else:
@@ -581,7 +583,7 @@ def createToolpath(filename, temp):
             #                                 {'temperature': tempmetadata['temperature']},
             #                                 [])
             #    printersettings['tool0temp'] = tempmetadata['temperature']
-            #
+
         elif line[0] == 'M105':
             # Report temp
             pass
@@ -621,10 +623,6 @@ def createToolpath(filename, temp):
 
         else:
             print('\nignoring', repr(line[0]))
-
-        linenum += 1
-        if (linenum % 100) == 0:
-            print('\x1b[2K\r' + printline.format(linenum, progresslen, linenum/progresslen * 100.0), end='')
 
     print()
     print('writing toolpath')
