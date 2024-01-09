@@ -14,7 +14,7 @@ from uuid import uuid4
 def generateMetajson(temp, vardict):
     meta = json.loads('''
 {
-    "bot_type": "replicator_b",
+    "bot_type": "mini_8",
     "bounding_box": null,
     "chamber_temperature": null,
     "commanded_duration_s": null,
@@ -31,13 +31,13 @@ def generateMetajson(temp, vardict):
     "num_z_transitions": null,
     "platform_temperature": null,
     "thing_id": null,
-    "tool_type": "mk13",
-    "tool_types": ["mk13"],
+    "tool_type": "mk12",
+    "tool_types": ["mk12"],
     "total_commands": null,
     "miracle_config": {
-        "_bot": "replicator_b",
+        "_bot": "mini_8",
         "_extruders": [
-            "mk13"
+            "mk12"
         ],
         "_materials": [
             "pla"
@@ -313,8 +313,8 @@ def generateMetajson(temp, vardict):
                 "shellsLeakyConnections": true,
                 "splitMinimumDistance": 0.4,
                 "startPosition": {
-                    "x": -150,
-                    "y": -100,
+                    "x": -59,
+                    "y": 37,
                     "z": 0.2
                 },
                 "supportAngle": 15,
