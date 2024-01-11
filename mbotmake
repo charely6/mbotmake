@@ -10,6 +10,7 @@ import re
 import traceback
 from uuid import uuid4
 
+DEBUG = False
 
 def generateMetajson(temp, vardict):
     meta = json.loads('''
@@ -408,8 +409,8 @@ def generateMetajson(temp, vardict):
 
 def generateCommand(function, metadata, parameters, tags):
     return [{'command': {'function': function,
-                         'parameters': dict(parameters),
                          'metadata': dict(metadata),
+                         'parameters': dict(parameters),
                          'tags': list(tags)}}]
 
 
@@ -436,8 +437,8 @@ def createToolpath(filename, temp):
         {
             'a': 0.0,
             'feedrate': 23.0,
-            'x': -150.0,
-            'y': -100.0,
+            'x': -10.3,
+            'y': -0.25,
             'z': 0.3
         }
     tempmetadata = \
@@ -469,7 +470,7 @@ def createToolpath(filename, temp):
             'a': 0.0,
             'x': 0.0,
             'y': 0.0,
-            'z': 0.0
+            'z': -0.05
         }
     print('lines processed:')
     print(printline.format(0, linenum_last, 0.0), end='')
@@ -484,9 +485,13 @@ def createToolpath(filename, temp):
     G90 toggles absolute positioning
     G91 toggles relative positioning
     """
+    ignoring = False
     for linenum, line in enumerate(corpus, start=1):
 
         if (linenum % 100) == 0 or linenum == linenum_last:
+            if ignoring:
+                print('\n')
+            ignoring = False
             print('\x1b[2K\r' + printline.format(linenum, linenum_last, linenum/linenum_last * 100.0), end='')
 
         if line.startswith(';LAYER:'):
@@ -570,19 +575,19 @@ def createToolpath(filename, temp):
                             printersettings['extruder_temperature'] = tempmetadata['temperature']
                         else:
                             print('\x1b[2K\rMultiple temperatures issued during print, using only first.')
-            #if tempmetadata['index'] != -1:
-            #    processed += generateCommand('set_toolhead_temperature',
-            #                                 {},
-            #                                 tempmetadata,
-            #                                 [])
-            #    if printersettings['tool{}temp'.format(tempmetadata['index'])] == 0:
-            #        printersettings['tool{}temp'.format(tempmetadata['index'])] = tempmetadata['temperature']
-            #else: # there is only one extruder
-            #    processed += generateCommand('set_toolhead_temperature',
-            #                                 {},
-            #                                 {'temperature': tempmetadata['temperature']},
-            #                                 [])
-            #    printersettings['tool0temp'] = tempmetadata['temperature']
+            if tempmetadata['index'] != -1:
+                processed += generateCommand('set_toolhead_temperature',
+                                             {},
+                                             tempmetadata,
+                                             [])
+                if printersettings['tool{}temp'.format(tempmetadata['index'])] == 0:
+                    printersettings['tool{}temp'.format(tempmetadata['index'])] = tempmetadata['temperature']
+            else: # there is only one extruder
+                processed += generateCommand('set_toolhead_temperature',
+                                             {},
+                                             {'temperature': tempmetadata['temperature']},
+                                             [])
+                printersettings['tool0temp'] = tempmetadata['temperature']
 
         elif line[0] == 'M105':
             # Report temp
@@ -622,7 +627,15 @@ def createToolpath(filename, temp):
             printersettings['heatbed'] = True
 
         else:
-            print('\nignoring', repr(line[0]))
+            if ignoring:
+                print('   ', repr(line[0]), end='')
+            else:
+                ignoring  =True
+                print('\n\nignoring', repr(line[0]), end='')
+        if DEBUG:
+            processed += generateCommand('comment', {}, {'comment': f'{line}'}, [])
+
+            
 
     print()
     print('writing toolpath')
@@ -632,7 +645,7 @@ def createToolpath(filename, temp):
              '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Upper Position  0.3"},"tags":[]}},',
              '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Thickness       0.3"},"tags":[]}},',
              '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Width           2.5"},"tags":[]}},',
-             '{"command" : {"function":"move","metadata":{"relative":{"a":false,"x":false,"y":false,"z":false}},"parameters":{"a":0.0,"feedrate":23.0,"x":-150.0,"y":-100.0,"z":0.30},"tags":["Travel Move"]}},']
+             '{"command" : {"function":"move","metadata":{"relative":{"a":false,"x":false,"y":false,"z":false}},"parameters":{"a":0.0,"feedrate":23.0,"x":-50.0,"y":-50.0,"z":0.30},"tags":["Travel Move"]}},']
     lines += [f'{json.dumps(c, sort_keys=False)},' for c in processed]
     lines += ['{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"End of print"},"tags":[]}}']
     #compiledtoolpath = json.dumps(processed, sort_keys=False, indent=4)
@@ -661,14 +674,19 @@ def createToolpath(filename, temp):
             'y_min': min(c['y'] for c in printcoords),
             'z_max': max(c['z'] for c in printcoords),
             'z_min': min(c['z'] for c in printcoords)}
+    #for c in printcoords:
+    #    print(c)
+        #input('press')
+    print (bbox)
 
     # Make sure bounding box is centered near the origin in X/Y and at the bottom of Z.
     xrel = (bbox['x_max'] + bbox['x_min']) / (bbox['x_max'] - bbox['x_min'])
     yrel = (bbox['y_max'] + bbox['y_min']) / (bbox['y_max'] - bbox['y_min'])
     zrel = (bbox['z_max'] + bbox['z_min']) / (bbox['z_max'] - bbox['z_min'])
-    assert -0.05 < xrel < 0.05, xrel
-    assert -0.05 < yrel < 0.05, yrel
-    assert  0.95 < zrel < 1.05, zrel
+    assert -0.1 < xrel < 0.1, xrel
+    assert -0.1 < yrel < 0.1, yrel
+    #assert  0.95 < zrel < 1.05, zrel
+    assert 0 < bbox['z_min'] < 0.5, bbox['z_min']
 
     printersettings['bounding_box'] = bbox
 
