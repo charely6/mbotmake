@@ -23,7 +23,7 @@ Big notes for making your own config. Origin=middle, extruder absolute not relat
 
 I also added a global variable at the top of mbotmake called DEBUG this will add each processed line as a "comment" into the jsontool path file I don't know if printing with all that in there will cause issues but it might so I recommend leaving it at False unless you are having weird issues and want to compare gcode-> jsontoolpath directly.
 
-#TODO
+# TODO
 
 More testing using different 5th gen and plus machines. 
 
