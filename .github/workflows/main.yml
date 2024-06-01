@@ -26,7 +26,7 @@ jobs:
 
       # Uploads artifact
       - name: Commit Artifact
-      - uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
           add: "['./build/*.exe']"
