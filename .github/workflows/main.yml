@@ -23,10 +23,15 @@ jobs:
           nuitka-version: main
           script-name: mbotmake 
           onefile: true
-
+      # Uploads artifact
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mbotmake.exe
+          path: build/mbotmake.exe
       # Uploads artifact
       - name: Commit Artifact
         uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
-          add: "['./build/*.exe']"
+          add: "['build/mbotmake.exe']"
