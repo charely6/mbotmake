@@ -12,10 +12,9 @@ from uuid import uuid4
 
 DEBUG = False
 
-def generateMetajson(temp, vardict):
-    meta = json.loads('''
+METAJSON = '''
 {
-    "bot_type": "mini_8",
+    "bot_type": null,
     "bounding_box": null,
     "chamber_temperature": null,
     "commanded_duration_s": null,
@@ -32,14 +31,12 @@ def generateMetajson(temp, vardict):
     "num_z_transitions": null,
     "platform_temperature": null,
     "thing_id": null,
-    "tool_type": "mk12",
-    "tool_types": ["mk12"],
+    "tool_type": null,
+    "tool_types": [null],
     "total_commands": null,
     "miracle_config": {
-        "_bot": "mini_8",
-        "_extruders": [
-            "mk12"
-        ],
+        "_bot": null,
+        "_extruders": [null],
         "_materials": [
             "pla"
         ],
@@ -314,9 +311,9 @@ def generateMetajson(temp, vardict):
                 "shellsLeakyConnections": true,
                 "splitMinimumDistance": 0.4,
                 "startPosition": {
-                    "x": -59,
-                    "y": 37,
-                    "z": 0.2
+                    "x": null,
+                    "y": null,
+                    "z": null
                 },
                 "supportAngle": 15,
                 "supportBreakawayModelOffset": -0.15,
@@ -376,8 +373,75 @@ def generateMetajson(temp, vardict):
     "uuid": "87fe421b-427a-4657-be72-28b7a6beee72",
     "version": "1.2.0"
 }
-''')
+'''
 
+def metaJson5th(meta):
+    '''Update botType for Replicator 5th Gen'''
+    meta['bot_type'] = "replicator_5"
+    meta['miracle_config']['_bot'] = "replicator_5"
+    meta['miracle_config']['gaggles']['default']['startPosition']['x'] = -125
+    meta['miracle_config']['gaggles']['default']['startPosition']['y'] = -99
+    meta['miracle_config']['gaggles']['default']['startPosition']['z'] = 0.2
+    return meta
+def metaJsonPlus(meta):
+    '''Update botType for Replicator+'''
+    meta['bot_type'] = "replicator_b"
+    meta['miracle_config']['_bot'] = "replicator_b"
+    meta['miracle_config']['gaggles']['default']['startPosition']['x'] = -150
+    meta['miracle_config']['gaggles']['default']['startPosition']['y'] = -100
+    meta['miracle_config']['gaggles']['default']['startPosition']['z'] = 0.2
+    return meta
+
+def metaJsonMini(meta):
+    '''Update botType for Replicator Mini'''
+    meta['bot_type'] = "mini_4"
+    meta['miracle_config']['_bot'] = "mini_4"
+    meta['miracle_config']['gaggles']['default']['startPosition']['x'] = -59
+    meta['miracle_config']['gaggles']['default']['startPosition']['y'] = -48
+    meta['miracle_config']['gaggles']['default']['startPosition']['z'] = 1
+    return meta
+def metaJsonMiniPlus(meta):
+    '''Update botType for Replicator Mini+'''
+    meta['bot_type'] = "mini_8"
+    meta['miracle_config']['_bot'] = "mini_8"
+    meta['miracle_config']['gaggles']['default']['startPosition']['x'] = -59
+    meta['miracle_config']['gaggles']['default']['startPosition']['y'] = 37
+    meta['miracle_config']['gaggles']['default']['startPosition']['z'] = 0.2
+    return meta
+
+def metaJsonSmartExtruder(meta):
+    '''Updates Tool types for Smart Extruder'''
+    meta['tool_type'] = "mk12"
+    meta['tool_types'] = ["mk12"]
+    meta['miracle_config']['_extruders'] = ["mk12"]
+
+    return meta
+def metaJsonSmartExtruderPlus(meta):
+    '''Updates Tool types for Smart Extruder+'''
+    meta['tool_type'] = "mk13"
+    meta['tool_types'] = ["mk13"]
+    meta['miracle_config']['_extruders'] = ["mk13"]
+
+    return meta
+def metaJsonToughSmartExtruderPlus(meta):
+    '''Updates Tool types for Tough Smart Extruder+'''
+    meta['tool_type'] = "mk13_impla"
+    meta['tool_types'] = ["mk13_impla"]
+    meta['miracle_config']['_extruders'] = ["mk13_impla"]
+
+    return meta
+
+def metaJsonToughSmartExtruderPlus(meta):
+    '''Updates Tool types for Experimental Extruder'''
+    meta['tool_type'] = "mk13_experimental"
+    meta['tool_types'] = ["mk13_experimental"]
+    meta['miracle_config']['_extruders'] = ["mk13_experimental"]
+
+    return meta
+
+def generateMetajson(temp, vardict):
+    meta = metaJsonMiniPlus(json.loads(METAJSON))
+    meta = metaJsonSmartExtruder(meta)
     meta['bounding_box']      = vardict['bounding_box']
 
     meta['total_commands']    = vardict['toolpathfilelength']
