@@ -8,6 +8,9 @@ import copy
 import math
 import re
 import traceback
+import base64
+from os import getenv
+
 from uuid import uuid4
 
 DEBUG = False
@@ -440,8 +443,10 @@ def metaJsonToughSmartExtruderPlus(meta):
     return meta
 
 def generateMetajson(temp, vardict):
-    meta = metaJsonMiniPlus(json.loads(METAJSON))
-    meta = metaJsonSmartExtruder(meta)
+    #meta = metaJsonMiniPlus(json.loads(METAJSON))
+    meta = metaJson5th(json.loads(METAJSON))
+    #meta = metaJsonSmartExtruder(meta)
+    meta = metaJsonSmartExtruderPlus(meta)
     meta['bounding_box']      = vardict['bounding_box']
 
     meta['total_commands']    = vardict['toolpathfilelength']
@@ -470,6 +475,34 @@ def generateMetajson(temp, vardict):
     with open('{}/meta.json'.format(temp), 'w') as metafile:
         json.dump(meta, metafile, indent=4)
 
+def generateThumbnails(filename, temp):
+    '''copied from sabesnait's rfork'''
+    tnNames = []
+    file = open(filename, 'r')
+    line = file.readline()
+    if "PrusaSlicer" not in line and "HEADER_BLOCK_START" not in line:  # only tested on Prusa Slicer
+        print(line)
+        return tnNames;
+    while True:
+        line = file.readline()
+        if "thumbnail begin" in line:
+            thumbnailMeta = line.split(' ')
+            thumbnailSize = thumbnailMeta[3]
+
+            line = file.readline()
+            thumbnail_data = ""
+            while "thumbnail end" not in line and line:
+                thumbnail_data = thumbnail_data + line.strip("; \n")
+                line = file.readline()
+            decoded_data = base64.b64decode(thumbnail_data)
+            thumbnailFileName = '{}/thumbnail_' + thumbnailSize  + '.png'
+            tnNames.append(thumbnailFileName)
+            with open(thumbnailFileName.format(temp), 'wb') as thumbnailFile:
+                thumbnailFile.write(decoded_data)
+        if not line:
+            break;
+    file.close();
+    return tnNames
 
 def generateCommand(function, metadata, parameters, tags):
     return [{'command': {'function': function,
@@ -757,24 +790,47 @@ def createToolpath(filename, temp):
     return printersettings
 
 
-def packageMBotFile(filename, temp):
+def packageMBotFile(filename, temp, tnNames):
     with zipfile.ZipFile(filename, 'w', compression=zipfile.ZIP_DEFLATED) as mbotfile:
+        for tn in tnNames:
+            mbotfile.write(tn.format(temp), arcname=tn.strip("{}/"))
         mbotfile.write('{}/meta.json'.format(temp), arcname='meta.json')
         mbotfile.write('{}/print.jsontoolpath'.format(temp), arcname='print.jsontoolpath')
     return
 
 
 def main(argv):
-    for gcode in argv[1:]:
-        temp = tempfile.mkdtemp()
-        output = gcode.replace('.gcode', '.makerbot')
-        print('Generating toolpath for', output)
-        vardict = createToolpath(gcode, temp)
-        print('Generating metadata for', output)
-        generateMetajson(temp, vardict)
-        print('Packaging', output)
-        packageMBotFile(output, temp)
-        print(output, 'done!')
+    input()
+    try:
+        slicerScript = False
+        for gcode in argv[1:]:
+            temp = tempfile.mkdtemp()
+            if "-prusa" in gcode:
+                slicerScript = True
+                continue
+            if "-orca" in gcode:
+                slicerScript = True
+                continue
+            if slicerScript:
+                output = str(getenv('SLIC3R_PP_OUTPUT_NAME')).replace('.gcode','.makerbot')
+            else:
+                output = gcode.replace('.gcode', '.makerbot')
+
+            print('Generating toolpath for', output)
+            vardict = createToolpath(gcode, temp)
+            print('Generating metadata for', output)
+            generateMetajson(temp, vardict)
+            print('Generating thumbnails for', output)
+            tnNames = generateThumbnails(gcode, temp)
+            print(len(tnNames),'Thumbnails(s) generated')
+            print('Packaging', output)
+            packageMBotFile(output, temp, tnNames)
+            print(output, 'done!')
+    except Exception as e:
+        print()
+        print('An Error')
+        print(e)
+        input()
 
 
 if __name__ == '__main__':
