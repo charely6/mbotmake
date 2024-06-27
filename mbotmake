@@ -10,6 +10,7 @@ import re
 import traceback
 import base64
 from os import getenv
+from enum import Enum
 
 from uuid import uuid4
 
@@ -378,6 +379,21 @@ METAJSON = '''
 }
 '''
 
+
+class MachineType(Enum):
+    REPLICATOR5 = 1
+    REPLICATORPlUS = 2
+    REPLICATORMINI = 3
+    REPLICATORMINIPLUS = 4
+
+
+class ExtruderType(Enum):
+    SMARTEXTRUDER = 1
+    SMARTEXTRUDERPLUS = 2
+    TOUGHEXTRUDER = 3
+    EXPERIMENTALEXTRUDER = 4
+
+
 def metaJson5th(meta):
     '''Update botType for Replicator 5th Gen'''
     meta['bot_type'] = "replicator_5"
@@ -386,6 +402,7 @@ def metaJson5th(meta):
     meta['miracle_config']['gaggles']['default']['startPosition']['y'] = -99
     meta['miracle_config']['gaggles']['default']['startPosition']['z'] = 0.2
     return meta
+
 def metaJsonPlus(meta):
     '''Update botType for Replicator+'''
     meta['bot_type'] = "replicator_b"
@@ -403,6 +420,8 @@ def metaJsonMini(meta):
     meta['miracle_config']['gaggles']['default']['startPosition']['y'] = -48
     meta['miracle_config']['gaggles']['default']['startPosition']['z'] = 1
     return meta
+
+
 def metaJsonMiniPlus(meta):
     '''Update botType for Replicator Mini+'''
     meta['bot_type'] = "mini_8"
@@ -412,6 +431,7 @@ def metaJsonMiniPlus(meta):
     meta['miracle_config']['gaggles']['default']['startPosition']['z'] = 0.2
     return meta
 
+
 def metaJsonSmartExtruder(meta):
     '''Updates Tool types for Smart Extruder'''
     meta['tool_type'] = "mk12"
@@ -419,6 +439,8 @@ def metaJsonSmartExtruder(meta):
     meta['miracle_config']['_extruders'] = ["mk12"]
 
     return meta
+
+
 def metaJsonSmartExtruderPlus(meta):
     '''Updates Tool types for Smart Extruder+'''
     meta['tool_type'] = "mk13"
@@ -426,6 +448,8 @@ def metaJsonSmartExtruderPlus(meta):
     meta['miracle_config']['_extruders'] = ["mk13"]
 
     return meta
+
+
 def metaJsonToughSmartExtruderPlus(meta):
     '''Updates Tool types for Tough Smart Extruder+'''
     meta['tool_type'] = "mk13_impla"
@@ -434,7 +458,8 @@ def metaJsonToughSmartExtruderPlus(meta):
 
     return meta
 
-def metaJsonToughSmartExtruderPlus(meta):
+
+def metaJsonExperimentalExtruderPlus(meta):
     '''Updates Tool types for Experimental Extruder'''
     meta['tool_type'] = "mk13_experimental"
     meta['tool_types'] = ["mk13_experimental"]
@@ -442,38 +467,58 @@ def metaJsonToughSmartExtruderPlus(meta):
 
     return meta
 
-def generateMetajson(temp, vardict):
-    #meta = metaJsonMiniPlus(json.loads(METAJSON))
-    meta = metaJson5th(json.loads(METAJSON))
-    #meta = metaJsonSmartExtruder(meta)
-    meta = metaJsonSmartExtruderPlus(meta)
-    meta['bounding_box']      = vardict['bounding_box']
 
-    meta['total_commands']    = vardict['toolpathfilelength']
+def generateMetajson(temp, vardict, machinetype, extrudertype):
+    meta = json.loads(METAJSON)
 
-    meta['duration_s']        = vardict['time']
+    match machinetype:
+        case MachineType.REPLICATOR5:
+            meta = metaJson5th(meta)
+        case MachineType.REPLICATORPlUS:
+            meta = metaJsonPlus(meta)
+        case MachineType.REPLICATORMINI:
+            meta = metaJsonMini(meta)
+        case MachineType.REPLICATORMINIPLUS:
+            meta = metaJsonMiniPlus(meta)
+
+    match extrudertype:
+        case ExtruderType.SMARTEXTRUDER:
+            meta = metaJsonSmartExtruder(meta)
+        case ExtruderType.SMARTEXTRUDERPLUS:
+            meta = metaJsonSmartExtruderPlus(meta)
+        case ExtruderType.TOUGHEXTRUDER:
+            meta = metaJsonToughSmartExtruderPlus(meta)
+        case ExtruderType.EXPERIMENTALEXTRUDER:
+            meta = metaJsonExperimentalExtruderPlus(meta)
+
+    meta['bounding_box'] = vardict['bounding_box']
+
+    meta['total_commands'] = vardict['toolpathfilelength']
+
+    meta['duration_s'] = vardict['time']
 
     # I have no idea what this is supposed to be
-    meta['commanded_duration_s'] = vardict['time']/2
+    meta['commanded_duration_s'] = vardict['time'] / 2
 
     meta['num_z_transitions'] = vardict['z_transitions']
-    meta['num_z_layers']      = vardict['z_transitions'] + 1
+    meta['num_z_layers'] = vardict['z_transitions'] + 1
 
-    meta['platform_temperature']   = vardict['bedtemp']
+    meta['platform_temperature'] = vardict['bedtemp']
 
-    meta['extruder_temperature']   = vardict['extruder_temperature']
-    meta['extruder_temperatures']  = [meta['extruder_temperature']]
+    meta['extruder_temperature'] = vardict['extruder_temperature']
+    meta['extruder_temperatures'] = [meta['extruder_temperature']]
 
-    meta['extrusion_distance_mm']  = vardict['extrusion_distance']
+    meta['extrusion_distance_mm'] = vardict['extrusion_distance']
     meta['extrusion_distances_mm'] = [meta['extrusion_distance_mm']]
 
-    meta['extrusion_mass_g']       = vardict['extrusion_distance']*0.00305
-    meta['extrusion_masses_g']     = [meta['extrusion_mass_g']]
+    meta['extrusion_mass_g'] = vardict['extrusion_distance'] * 0.00305
+    meta['extrusion_masses_g'] = [meta['extrusion_mass_g']]
 
     meta['uuid'] = str(uuid4())
 
     with open('{}/meta.json'.format(temp), 'w') as metafile:
         json.dump(meta, metafile, indent=4)
+
 
 def generateThumbnails(filename, temp):
     '''copied from sabesnait's rfork'''
@@ -482,7 +527,7 @@ def generateThumbnails(filename, temp):
     line = file.readline()
     if "PrusaSlicer" not in line and "HEADER_BLOCK_START" not in line:  # only tested on Prusa Slicer
         print(line)
-        return tnNames;
+        return tnNames
     while True:
         line = file.readline()
         if "thumbnail begin" in line:
@@ -495,14 +540,15 @@ def generateThumbnails(filename, temp):
                 thumbnail_data = thumbnail_data + line.strip("; \n")
                 line = file.readline()
             decoded_data = base64.b64decode(thumbnail_data)
-            thumbnailFileName = '{}/thumbnail_' + thumbnailSize  + '.png'
+            thumbnailFileName = '{}/thumbnail_' + thumbnailSize + '.png'
             tnNames.append(thumbnailFileName)
             with open(thumbnailFileName.format(temp), 'wb') as thumbnailFile:
                 thumbnailFile.write(decoded_data)
         if not line:
-            break;
-    file.close();
+            break
+    file.close()
     return tnNames
+
 
 def generateCommand(function, metadata, parameters, tags):
     return [{'command': {'function': function,
@@ -521,7 +567,7 @@ def computeTime(prev, current):
         # time = sqrt((x2-x1)^2 + (y2-y1)^2 + (z2-z1)^2)/feedrate
         distance = math.dist([current['x'], current['y'], current['z']],
                              [prev['x'], prev['y'], prev['z']])
-    return distance/current['feedrate']
+    return distance / current['feedrate']
 
 
 def createToolpath(filename, temp):
@@ -589,7 +635,7 @@ def createToolpath(filename, temp):
             if ignoring:
                 print('\n')
             ignoring = False
-            print('\x1b[2K\r' + printline.format(linenum, linenum_last, linenum/linenum_last * 100.0), end='')
+            print('\x1b[2K\r' + printline.format(linenum, linenum_last, linenum / linenum_last * 100.0), end='')
 
         if line.startswith(';LAYER:'):
             sec = int(line.split(':', 1)[1])
@@ -679,7 +725,7 @@ def createToolpath(filename, temp):
                                              [])
                 if printersettings['tool{}temp'.format(tempmetadata['index'])] == 0:
                     printersettings['tool{}temp'.format(tempmetadata['index'])] = tempmetadata['temperature']
-            else: # there is only one extruder
+            else:  # there is only one extruder
                 processed += generateCommand('set_toolhead_temperature',
                                              {},
                                              {'temperature': tempmetadata['temperature']},
@@ -727,22 +773,21 @@ def createToolpath(filename, temp):
             if ignoring:
                 print('   ', repr(line[0]), end='')
             else:
-                ignoring  =True
+                ignoring = True
                 print('\n\nignoring', repr(line[0]), end='')
         if DEBUG:
             processed += generateCommand('comment', {}, {'comment': f'{line}'}, [])
 
-            
-
     print()
     print('writing toolpath')
-    lines = ['{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Layer Section 0 (0)"},"tags":[]}},',
-             '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Material 0"},"tags":[]}},',
-             '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Lower Position  0"},"tags":[]}},',
-             '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Upper Position  0.3"},"tags":[]}},',
-             '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Thickness       0.3"},"tags":[]}},',
-             '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Width           2.5"},"tags":[]}},',
-             '{"command" : {"function":"move","metadata":{"relative":{"a":false,"x":false,"y":false,"z":false}},"parameters":{"a":0.0,"feedrate":23.0,"x":-50.0,"y":-50.0,"z":0.30},"tags":["Travel Move"]}},']
+    lines = [
+        '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Layer Section 0 (0)"},"tags":[]}},',
+        '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Material 0"},"tags":[]}},',
+        '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Lower Position  0"},"tags":[]}},',
+        '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Upper Position  0.3"},"tags":[]}},',
+        '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Thickness       0.3"},"tags":[]}},',
+        '{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"Width           2.5"},"tags":[]}},',
+        '{"command" : {"function":"move","metadata":{"relative":{"a":false,"x":false,"y":false,"z":false}},"parameters":{"a":0.0,"feedrate":23.0,"x":-50.0,"y":-50.0,"z":0.30},"tags":["Travel Move"]}},']
     lines += [f'{json.dumps(c, sort_keys=False)},' for c in processed]
     lines += ['{"command" : {"function":"comment","metadata":{},"parameters":{"comment":"End of print"},"tags":[]}}']
     #compiledtoolpath = json.dumps(processed, sort_keys=False, indent=4)
@@ -773,8 +818,8 @@ def createToolpath(filename, temp):
             'z_min': min(c['z'] for c in printcoords)}
     #for c in printcoords:
     #    print(c)
-        #input('press')
-    print (bbox)
+    #input('press')
+    print(bbox)
 
     # Make sure bounding box is centered near the origin in X/Y and at the bottom of Z.
     xrel = (bbox['x_max'] + bbox['x_min']) / (bbox['x_max'] - bbox['x_min'])
@@ -800,29 +845,66 @@ def packageMBotFile(filename, temp, tnNames):
 
 
 def main(argv):
-    input()
     try:
+        #If you need to change it and you aren't using the post processing script change these 2 lines to match whichever machine and extruder your using,
+        # otherwise use the corresponding -Machine, and -extruder in your post processing setup.
+        machinetype = MachineType.REPLICATOR5
+        extrudertype = ExtruderType.SMARTEXTRUDER
         slicerScript = False
         for gcode in argv[1:]:
             temp = tempfile.mkdtemp()
             if "-prusa" in gcode:
                 slicerScript = True
+                print("prusa")
                 continue
             if "-orca" in gcode:
                 slicerScript = True
+                print("orca")
+                continue
+            if "-MiniPlus" in gcode:
+                machinetype = MachineType.REPLICATORMINIPLUS
+                print("MiniPlus")
+                continue
+            if "-RepPlus" in gcode:
+                machinetype = MachineType.REPLICATORPlUS
+                print("RepPlus")
+                continue
+            if "-Mini5" in gcode:
+                machinetype = MachineType.REPLICATORMINI
+                print("Mini5")
+                continue
+            if "-Rep5" in gcode:
+                machinetype = MachineType.REPLICATOR5
+                print("Rep5")
+                continue
+            if "-SmartExtPlus" in gcode:
+                extrudertype = ExtruderType.SMARTEXTRUDERPLUS
+                print("SmartExtPlus")
+                continue
+            if "-SmartExt" in gcode:
+                extrudertype = ExtruderType.SMARTEXTRUDER
+                print("SmartExt")
+                continue
+            if "-ToughExt" in gcode:
+                extrudertype = ExtruderType.TOUGHEXTRUDER
+                print("ToughExt")
+                continue
+            if "-ExperimentalExt" in gcode:
+                extrudertype = ExtruderType.EXPERIMENTALEXTRUDER
+                print("ExperimentalExt")
                 continue
             if slicerScript:
-                output = str(getenv('SLIC3R_PP_OUTPUT_NAME')).replace('.gcode','.makerbot')
+                output = str(getenv('SLIC3R_PP_OUTPUT_NAME')).replace('.gcode', '.makerbot')
             else:
                 output = gcode.replace('.gcode', '.makerbot')
 
             print('Generating toolpath for', output)
             vardict = createToolpath(gcode, temp)
             print('Generating metadata for', output)
-            generateMetajson(temp, vardict)
+            generateMetajson(temp, vardict, machinetype, extrudertype)
             print('Generating thumbnails for', output)
             tnNames = generateThumbnails(gcode, temp)
-            print(len(tnNames),'Thumbnails(s) generated')
+            print(len(tnNames), 'Thumbnails(s) generated')
             print('Packaging', output)
             packageMBotFile(output, temp, tnNames)
             print(output, 'done!')
