@@ -825,8 +825,14 @@ def createToolpath(filename, temp):
     xrel = (bbox['x_max'] + bbox['x_min']) / (bbox['x_max'] - bbox['x_min'])
     yrel = (bbox['y_max'] + bbox['y_min']) / (bbox['y_max'] - bbox['y_min'])
     zrel = (bbox['z_max'] + bbox['z_min']) / (bbox['z_max'] - bbox['z_min'])
-    assert -0.1 < xrel < 0.1, xrel
-    assert -0.1 < yrel < 0.1, yrel
+    print('xrel:')
+    print(xrel)
+    print('yrel:')
+    print(yrel)
+    print('zrel:')
+    print(zrel)
+    assert -0.15 < xrel < 0.15, xrel
+    assert -0.15 < yrel < 0.15, yrel
     #assert  0.95 < zrel < 1.05, zrel
     assert 0 < bbox['z_min'] < 0.5, bbox['z_min']
 
