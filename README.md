@@ -1,6 +1,6 @@
 # mbotmake
 
-A gcode to .makerbot conversion tool, compatible with Marlin gcode from Cura.
+A gcode to .makerbot conversion tool, compatible with Marlin gcode from OrcaSlicer.
 And likely others.
 
 **This is currently defaults to a Replicator 5 with a Smart Extruder** 
@@ -50,11 +50,15 @@ Change these two settings in OrcaSlicer:
 '55x40, 110x80, 320x200'
 
 # TODO
+~~Modify the script to handle all the different versions easily.~~ Now supported with Parameters
+
+Write a nice and usable walkthrough for setting this up maybe even a video
+
+Make printer configs for all the different printers and different slicers (cura, prusa slicer, orca slicer) 
+
+Figure out if there is a better way than trying to compile to exe that would mean its easier for people to use.
 
 More testing using different 5th gen and plus machines. 
 
-~~Modify the script to handle all the different versions easily.~~ Now supported with Parameters
-
 Figure out how to do other nozzle sizes specifically 0.2mm or 0.6mm 
 
-Make printer configs for all the different printers and different slicers (cura, prusa slicer, orca slicer) 
