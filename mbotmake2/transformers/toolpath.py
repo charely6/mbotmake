@@ -22,7 +22,7 @@ class Logging:
 
 
 class ToolpathTransformer(NodeVisitor):
-    def __init__(self, global_z_offset: float = -0.05):
+    def __init__(self, global_z_offset: float):
         self.commands: list[Command] = []
 
         self.extruder_temperature: float | None = None

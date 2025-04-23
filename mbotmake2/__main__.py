@@ -22,7 +22,7 @@ def countNewlines(file: Path) -> int:
     return int(result.split()[0])
 
 
-def decodeGCodefile(filename: Path) -> ToolpathTransformer:
+def decodeGCodefile(filename: Path, global_z_offset: float) -> ToolpathTransformer:
     chunks = 4096
 
     progress_bar = newProgressBar(countNewlines(filename) // chunks * chunks + chunks)
@@ -30,7 +30,7 @@ def decodeGCodefile(filename: Path) -> ToolpathTransformer:
 
     progress_bar.start()
     with open(filename, "r") as file:
-        transformer = ToolpathTransformer()
+        transformer = ToolpathTransformer(global_z_offset=global_z_offset)
         while True:
             next_n_lines = list(islice(file, chunks))
             if not next_n_lines:
@@ -55,7 +55,7 @@ def packageMBotFile(filename: Path, temp_dir: Path, thumbnail_paths: list[Path])
         mbotfile.write(temp_dir / "print.jsontoolpath", arcname="print.jsontoolpath")
 
 
-def parseArgs(argv: list[str]) -> tuple[Path, MachineType, ExtruderType]:
+def parseArgs(argv: list[str]) -> tuple[Path, MachineType, ExtruderType, float]:
     """Parse the command-line arguments.
 
     Following the convention of the GPX project at
@@ -80,22 +80,29 @@ def parseArgs(argv: list[str]) -> tuple[Path, MachineType, ExtruderType]:
         default=ExtruderType.SMARTEXTRUDERPLUS.value,
         help="Extruder type",
     )
+    parser.add_argument(
+        "-z",
+        "--z_offset",
+        type=float,
+        default=-0.05,
+        help="Global Z offset",
+    )
     parser.add_argument("input", type=Path, help="Path to the input Gcode file")
 
     args = parser.parse_args(argv[1:])
 
-    return args.input, args.machine, args.extruder
+    return args.input, args.machine, args.extruder, args.z_offset
 
 
 if __name__ == "__main__":
-    input_file, machine_type, extruder_type = parseArgs(sys.argv)
+    input_file, machine_type, extruder_type, global_z_offset = parseArgs(sys.argv)
 
     with tempfile.TemporaryDirectory() as tmpdir_name:
         temp_dir = Path(tmpdir_name)
 
         thumbnail_paths = extractThumbnails(input_file, temp_dir)
 
-        transformer = decodeGCodefile(input_file)
+        transformer = decodeGCodefile(input_file, global_z_offset)
 
         # Checking toolpath
         assert transformer.is_extrusion_absolute, "Fatal: Relative extrusion position detected."
