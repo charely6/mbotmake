@@ -1,6 +1,5 @@
 import argparse
 import json
-import subprocess
 import sys
 import tempfile
 import zipfile
@@ -17,9 +16,14 @@ from mbotmake2.types import Command, ExtruderType, MachineType
 from mbotmake2.validate import collectPrinterSettings
 
 
-def countNewlines(file: Path) -> int:
-    result = subprocess.check_output(["wc", "-l", file.as_posix()])
-    return int(result.split()[0])
+def countNewlines(filename, chunk_size=8192):
+    """Count the number of lines of a text file, using the raw buffer
+    interface."""
+    count = 0
+    with open(filename, "rb") as f:
+        while chunk := f.read(chunk_size):
+            count += chunk.count(b"\n")
+    return count
 
 
 def decodeGCodefile(filename: Path) -> ToolpathTransformer:
