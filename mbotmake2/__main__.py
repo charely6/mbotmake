@@ -120,7 +120,17 @@ if __name__ == "__main__":
                 json.dump({"command": asdict(cmd)}, toolpathfile, sort_keys=True)
                 toolpathfile.write(",\n")
 
-            json.dump(asdict(Command("comment", {"comment": "End of print"})), toolpathfile)
+            json.dump(
+                {
+                    "command": asdict(
+                        Command(
+                            "comment",
+                            {"comment": "End of print"},
+                        )
+                    )
+                },
+                toolpathfile,
+            )
             toolpathfile.write("\n]\n")
 
         output_file = input_file.with_suffix(".makerbot")
