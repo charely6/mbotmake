@@ -19,14 +19,14 @@ class PNGImage:
 
 class ThumbnailDecoder(NodeVisitor):
     def visit_Document(self, _, visited_children) -> list[PNGImage]:
-        _, thumbnails = visited_children
+        thumbnails = visited_children
 
         assert isinstance(thumbnails, list)
         assert isinstance(thumbnails[0], PNGImage)
         return thumbnails
 
     def visit_Thumbnail(self, _, visited_children) -> PNGImage:
-        _, header, chunks, _ = visited_children
+        header, chunks, _ = visited_children
 
         assert isinstance(chunks, list)
         encoded = "".join(chunks)
