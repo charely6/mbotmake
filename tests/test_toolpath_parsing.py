@@ -141,3 +141,14 @@ def test_arc_move() -> None:
         transformer.visit(ast)
 
     assert "Arc move" in str(error_message)
+
+
+def test_spiral_vase() -> None:
+    assert grammar.parse("G1 Z29.400 X-12.566 Y10.43 E578.69229\n")
+
+    ast = grammar.parse("G1 Z29.400 X-12.566 Y10.43 E578.69229\n")
+    transformer = ToolpathTransformer(ZERO_OFFSET)
+    with raises(VisitationError) as error_message:
+        transformer.visit(ast)
+
+    assert "Spiral vase" in str(error_message)

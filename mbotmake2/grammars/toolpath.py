@@ -30,11 +30,12 @@ AbsolutePositioning = "G90"
 AbsolutePositioningForExtruders = "M82"
 ResetPosition = "G92 E" ("0.0" / "0")
 
-Move = "G1" (Coord3D / Coord2D / CoordE / CoordZ / Feedrate)
+Move = "G1" (CoordSpiralVase / Coord3D / Coord2D / CoordE / CoordZ / Feedrate)
 CoordZ = Z Decimal Feedrate?
 Coord2D = X Decimal Y Decimal ExtruderPosition? Feedrate?
 Coord3D = (X Decimal)? Y Decimal Z Decimal Feedrate?
 CoordE = ExtruderPosition Feedrate
+CoordSpiralVase = Z Decimal X Decimal Y Decimal ExtruderPosition
 
 ArcMove = ~r"G[23] [^\n]*"
 Unsupported = ~r"[MG][0-9]+[^\n;]*"i

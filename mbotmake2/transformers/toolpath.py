@@ -180,6 +180,12 @@ Reference: https://wiki.bambulab.com/en/software/bambu-studio/spiral-vase
     def visit_Feedrate(self, _, visited_children) -> float:
         return visited_children[1] / 60.0
 
+    def visit_CoordSpiralVase(self, node, _) -> None:
+        raise NotImplementedError(f"""Spiral vase not implemented: {node.text:s}
+
+Please disable "Spiral vase" feature in the Slicer:
+Reference: https://help.prusa3d.com/article/layers-and-perimeters_1748#spiral-vase""")
+
     def visit_ArcMove(self, node, _) -> None:
         raise NotImplementedError(f"""Arc move not implemented: {node.text:s}
 
